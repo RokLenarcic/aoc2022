@@ -1,6 +1,6 @@
 (ns aoc.inputs
   (:require [clojure.string :as str]
-            [clojure.java.io :as jio]))
+            [medley.core :as m]))
 
 (defn parse-numbers
   ([l] (parse-numbers false l))
@@ -33,3 +33,13 @@
     (fn [row]
       (mapv item-xf row))
     (str/split-lines s)))
+
+(defn map2d
+  "Transform to map, skips values that are nil"
+  [s item-xf]
+  (into {}
+        (for [[r-idx row] (m/indexed (str/split-lines s))
+              [c-idx c] (m/indexed row)
+              :let [v (item-xf c)]
+              :when (some? v)]
+          [[r-idx c-idx] v])))

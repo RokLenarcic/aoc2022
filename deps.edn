@@ -2,6 +2,8 @@
  :deps {org.clojure/clojure {:mvn/version "1.11.1"}
         medley/medley {:mvn/version "1.4.0"}
         ubergraph/ubergraph {:mvn/version "0.8.2"}
+        criterium/criterium {:mvn/version "0.4.6"}
+        org.clojars.roklenarcic/memento {:mvn/version "1.0.40"}
         com.rpl/specter {:mvn/version "1.1.4"}}
  :aliases
  {:run-m {:main-opts ["-m" "aoc.aoc2022"]}

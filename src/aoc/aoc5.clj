@@ -8,8 +8,7 @@
     identity))
 
 (defn parse-stack-line
-  [l]
-  (map second (re-seq #"(?:   |\[(\w)\])(?: |$)" l)))
+  [l] (map second (re-seq #"(?:   |\[(\w)\])(?: |$)" l)))
 
 (defn parse-move
   [l]
@@ -19,7 +18,9 @@
       (update :from dec)
       (update :to dec)))
 
-(defn apply-move [keep-order? state {:keys [n from to]}]
+(defn apply-move
+  "Move n crates from->to"
+  [keep-order? state {:keys [n from to]}]
   (let [crates (cond-> (take n (state (dec from)))
                  keep-order? reverse)]
     (-> state

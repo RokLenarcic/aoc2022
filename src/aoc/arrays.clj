@@ -1,16 +1,53 @@
 (ns aoc.arrays
-  (:require [ubergraph.core :as u]))
+  (:require
+    [clojure.walk :as walk]
+    [ubergraph.core :as u]))
 
 (defn size* [rect-array]
   [(count rect-array) (count (first rect-array))])
 
-(def dirs [[0 1] [1 0] [-1 0] [0 -1]])
-(def diagonal-dirs [[1 1] [-1 1]])
+(defn rot
+  "Rotates coordinates 90 deg"
+  [[row col] dir]
+  (case dir
+    ("R" :R) [col (* -1 row)]
+    ("L" :L) [(* -1 col) row]))
+
+(def dirs (vec (take 4 (iterate #(rot % :R) [0 1]))))
+(def diagonal-dirs (vec (take 4 (iterate #(rot % :R) [1 1]))))
 
 (defn p-sum
   "Sum two points"
   [p1 p2]
   (mapv + (or p1 [0 0]) (or p2 [0 0])))
+
+(defn adjacent* [dirs p]
+  (map (partial p-sum p) dirs))
+
+(defn- rasterize-low
+  "Uses Bresenham's alg"
+  [x1 y1 x2 y2]
+  (let [dx (- x2 x1)
+        dy (- y2 y1)
+        yi (Long/signum dy)
+        dy (* yi dy)]
+    (loop [x x1 y y1 d (- (* 2 dy) dx) acc []]
+      (let [acc' (conj acc [x y])
+            d' (+ d (* 2 (if (pos-int? d) (- dy dx) dy)))
+            y' (cond-> y (pos-int? d) (+ yi))]
+        (if (= x x2)
+          acc'
+          (recur (inc x) y' d' acc'))))))
+
+(defn rasterize
+  [[x1 y1] [x2 y2]]
+  (if (< (abs (- y2 y1)) (abs (- x2 x1)))
+    (if (> x1 x2)
+      (vec (reverse (rasterize-low x2 y2 x1 y1)))
+      (rasterize-low x1 y1 x2 y2))
+    (if (> y1 y2)
+      (vec (reverse (map (comp vec reverse) (rasterize-low y2 x2 y1 x1))))
+      (map (comp vec reverse) (rasterize-low y1 x1 y2 x2)))))
 
 (defn in-array? [arr coord]
   (some? (get-in arr coord))
@@ -91,3 +128,27 @@
     (apply u/digraph (concat ug-nodes ug-edges))))
 
 (defn node-val [g node] (u/attr g node :v))
+
+(defn bounds
+  "Returns [[minx,miny], [maxx, maxy]]"
+  [points]
+  (reduce (fn [[mins maxes :as ret] p]
+            (if ret
+              [(mapv min p mins) (mapv max p maxes)]
+              [p p]))
+          nil
+          points))
+
+(defn resolve-paths
+  "Some Loom algs return nested maps that represent a path {a {b {c 3},
+  this returns map {[a c] 3}"
+  [paths]
+  (reduce-kv
+    (fn [acc k v]
+      (let [m (walk/postwalk
+                #(if (map-entry? %)
+                   (if (number? (val %)) % (val %))
+                   %) v)]
+        (merge acc (update-keys m #(vector k %)))))
+    {}
+    paths))

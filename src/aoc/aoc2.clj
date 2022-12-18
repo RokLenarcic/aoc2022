@@ -1,5 +1,5 @@
 (ns aoc.aoc2
-  (:require [aoc.inputs :as in]
+  (:require [aoc.colls :as c]
             [clojure.java.io :as io]
             [clojure.string :as str]))
 
@@ -24,7 +24,6 @@
     (+ (pick-val me*) (match-val [opp me*]))))
 
 (defn p1 []
-  (apply + (map #(grade-round % translate-val1) input)))
+  (c/sum-of #(grade-round % translate-val1) input))
 
-(defn p2 []
-  (apply + (map #(grade-round % translate-val2) input)))
+(defn p2 [] (c/sum-of #(grade-round % translate-val2) input))

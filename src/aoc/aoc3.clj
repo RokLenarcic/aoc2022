@@ -1,5 +1,6 @@
 (ns aoc.aoc3
-  (:require [clojure.java.io :as io]))
+  (:require [clojure.java.io :as io]
+            [aoc.colls :as c]))
 
 (def priority
   (zipmap (concat "abcdefghijklmnopqrstuvwxyz"
@@ -16,11 +17,9 @@
           (char-in-all (next colls)))
     (first colls)))
 
-(defn p1 []
-  (apply + (map (fn [[s1 s2]] (priority (first (char-in-all [s1 s2])))) input)))
+(defn p1 [] (c/sum-of (fn [[s1 s2]] (priority (first (char-in-all [s1 s2])))) input))
 
 (defn p2 []
-  (apply +
-         (map (fn [[items1 items2 items3]]
-                (priority (first (char-in-all [(flatten items1) (flatten items2) (flatten items3)]))))
-              (partition-all 3 input))))
+  (c/sum-of (fn [[items1 items2 items3]]
+              (priority (first (char-in-all [(flatten items1) (flatten items2) (flatten items3)]))))
+            (partition-all 3 input)))
